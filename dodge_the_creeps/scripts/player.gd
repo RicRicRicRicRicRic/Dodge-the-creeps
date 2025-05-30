@@ -1,17 +1,20 @@
 extends Area2D
 
-@export var SPEED: int
-var velocity = Vector2()
-var screensize
-
 signal hit
 
-func _ready():
-	hide()
-	screensize = get_viewport_rect().size
+@export var speed = 400
 
-func _process(delta):
-	velocity = Vector2()
+var screen_size
+@onready var animated_sprite = $AnimatedSprite2D
+@onready var trail = $Trail
+
+func _ready():
+	screen_size = get_viewport_rect().size
+	body_entered.connect(_on_body_entered)
+
+func _physics_process(delta):
+	var velocity = Vector2.ZERO
+
 	if Input.is_action_pressed("right"):
 		velocity.x += 1
 	if Input.is_action_pressed("left"):
@@ -22,28 +25,35 @@ func _process(delta):
 		velocity.y -= 1
 
 	if velocity.length() > 0:
-		velocity = velocity.normalized() * SPEED
-		if velocity.x != 0:
-			$AnimatedSprite2D.play("right")
-			$AnimatedSprite2D.flip_v = false
-			$AnimatedSprite2D.flip_h = velocity.x < 0
-		elif velocity.y != 0:
-			$AnimatedSprite2D.play("up")
-			$AnimatedSprite2D.flip_v = velocity.y > 0
-			$AnimatedSprite2D.flip_h = false 
-	else:
-		$AnimatedSprite2D.stop()
+		velocity = velocity.normalized() * speed
+		trail.emitting = true
 
 	position += velocity * delta
-	position.x = clamp(position.x, 0, screensize.x)
-	position.y = clamp(position.y, 0, screensize.y)
 
-func _on_Player_body_entered():
-	hide()
-	emit_signal("hit")
-	call_deferred("set_monitoring", false)
+	position.x = clamp(position.x, 0, screen_size.x)
+	position.y = clamp(position.y, 0, screen_size.y)
 
-func start(pos):
-	position = pos
-	show()
-	monitoring = true
+	if animated_sprite:
+		animated_sprite.flip_h = false
+		animated_sprite.flip_v = false
+
+		if velocity.x > 0:
+			animated_sprite.play("right")
+		elif velocity.x < 0:
+			animated_sprite.play("right")
+			animated_sprite.flip_h = true
+		elif velocity.y < 0:
+			animated_sprite.play("up")
+		elif velocity.y > 0:
+			animated_sprite.play("up")
+			animated_sprite.flip_v = true
+		else:
+			animated_sprite.stop()
+			trail.emitting = false
+
+func _on_body_entered(body):
+	if body.has_method("on_screen_exited"):
+		hit.emit()
+		body.queue_free()
+		animated_sprite.stop()
+		trail.emitting = false

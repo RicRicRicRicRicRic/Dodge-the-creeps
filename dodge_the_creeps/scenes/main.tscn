@@ -1,20 +1,54 @@
-[gd_scene load_steps=2 format=3 uid="uid://bs07ii06s02qr"]
+[gd_scene load_steps=7 format=3 uid="uid://bs07ii06s02qr"]
 
+[ext_resource type="Script" uid="uid://b2qg7qh65qche" path="res://scripts/main.gd" id="1_0wfyh"]
+[ext_resource type="PackedScene" uid="uid://d150ldwv7w1xs" path="res://scenes/hud.tscn" id="2_jyhfs"]
 [ext_resource type="PackedScene" uid="uid://ddt6t8trxjirh" path="res://scenes/player.tscn" id="2_sugp2"]
+[ext_resource type="AudioStream" uid="uid://b8xvq3lh038ua" path="res://dodge_the_creeps_2d_assets/art/gameover.wav" id="4_jyhfs"]
+[ext_resource type="AudioStream" uid="uid://dr2usn888tokh" path="res://dodge_the_creeps_2d_assets/art/House In a Forest Loop.ogg" id="5_tbgi4"]
+
+[sub_resource type="Curve2D" id="Curve2D_sugp2"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 480, 0, 0, 0, 0, 0, 480, 720, 0, 0, 0, 0, 0, 720, 0, 0, 0, 0, 0, 0)
+}
+point_count = 5
 
 [node name="Main" type="Node"]
+script = ExtResource("1_0wfyh")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+z_index = -10
+offset_right = 480.0
+offset_bottom = 720.0
+color = Color(0.172345, 0.396151, 0.32614, 1)
 
 [node name="Player" parent="." instance=ExtResource("2_sugp2")]
-SPEED = 150
 
-[node name="Mob_Timer" type="Timer" parent="."]
+[node name="HUD" parent="." instance=ExtResource("2_jyhfs")]
+
+[node name="MobTimer" type="Timer" parent="."]
 wait_time = 0.5
 
-[node name="Score_Timer" type="Timer" parent="."]
+[node name="ScoreTimer" type="Timer" parent="."]
 
-[node name="Start_Timer" type="Timer" parent="."]
+[node name="StartTimer" type="Timer" parent="."]
 wait_time = 2.0
 one_shot = true
 
-[node name="Marker2D" type="Marker2D" parent="."]
+[node name="StartPosition" type="Marker2D" parent="."]
 position = Vector2(240, 450)
+
+[node name="MobPath" type="Path2D" parent="."]
+curve = SubResource("Curve2D_sugp2")
+
+[node name="MobSpawnLocation" type="PathFollow2D" parent="MobPath"]
+
+[node name="Death_sound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("4_jyhfs")
+volume_db = 12.0
+
+[node name="Background_sound" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("5_tbgi4")
+
+[connection signal="timeout" from="MobTimer" to="." method="_on_mob_timer_timeout"]
+[connection signal="timeout" from="ScoreTimer" to="." method="_on_score_timer_timeout"]
+[connection signal="timeout" from="StartTimer" to="." method="_on_start_timer_timeout"]

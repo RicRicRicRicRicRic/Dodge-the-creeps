@@ -1,6 +1,6 @@
-[gd_scene load_steps=8 format=3 uid="uid://ddt6t8trxjirh"]
+[gd_scene load_steps=13 format=3 uid="uid://ddt6t8trxjirh"]
 
-[ext_resource type="Script" uid="uid://bohmn736fenm0" path="res://scripts/player.gd" id="1_qlg0r"]
+[ext_resource type="Script" uid="uid://dsi58145fq7g1" path="res://scripts/player.gd" id="1_qlg0r"]
 [ext_resource type="Texture2D" uid="uid://cb3thsuiu6rwa" path="res://dodge_the_creeps_2d_assets/art/playerGrey_walk1.png" id="2_tuyoq"]
 [ext_resource type="Texture2D" uid="uid://ci8vuxg8iroux" path="res://dodge_the_creeps_2d_assets/art/playerGrey_walk2.png" id="3_fjrip"]
 [ext_resource type="Texture2D" uid="uid://trge8djbq6jl" path="res://dodge_the_creeps_2d_assets/art/playerGrey_up1.png" id="4_smehm"]
@@ -35,9 +35,28 @@ animations = [{
 radius = 54.0
 height = 132.0
 
+[sub_resource type="Gradient" id="Gradient_qlg0r"]
+offsets = PackedFloat32Array(0.015625, 1)
+colors = PackedColorArray(1, 1, 1, 0.564706, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_tuyoq"]
+gradient = SubResource("Gradient_qlg0r")
+
+[sub_resource type="Curve" id="Curve_qlg0r"]
+_data = [Vector2(0, 0.494382), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_tuyoq"]
+curve = SubResource("Curve_qlg0r")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_fjrip"]
+particle_flag_disable_z = true
+gravity = Vector3(0, 0, 0)
+scale_curve = SubResource("CurveTexture_tuyoq")
+color_ramp = SubResource("GradientTexture1D_tuyoq")
+
 [node name="Player" type="Area2D"]
 script = ExtResource("1_qlg0r")
-SPEED = 200
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 scale = Vector2(0.5, 0.5)
@@ -48,4 +67,9 @@ animation = &"right"
 scale = Vector2(0.5, 0.5)
 shape = SubResource("CapsuleShape2D_d2wvv")
 
-[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[node name="Trail" type="GPUParticles2D" parent="."]
+show_behind_parent = true
+amount = 10
+texture = ExtResource("4_smehm")
+speed_scale = 2.0
+process_material = SubResource("ParticleProcessMaterial_fjrip")
